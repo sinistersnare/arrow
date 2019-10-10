@@ -179,6 +179,7 @@ impl ScalarValue {
 /// Relation expression
 #[derive(Clone, PartialEq)]
 pub enum Expr {
+    Wildcard,
     /// index into a value within the row or complex value
     Column(usize),
     /// literal value
@@ -234,6 +235,7 @@ impl Expr {
     /// Find the `DataType` for the expression
     pub fn get_type(&self, schema: &Schema) -> DataType {
         match self {
+            Expr::Wildcard => DataType::Struct(schema.fields().clone()),
             Expr::Column(n) => schema.field(*n).data_type().clone(),
             Expr::Literal(l) => l.get_datatype(),
             Expr::Cast { data_type, .. } => data_type.clone(),
@@ -338,6 +340,7 @@ impl Expr {
 impl fmt::Debug for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Expr::Wildcard => write!(f, "*"),
             Expr::Column(i) => write!(f, "#{}", i),
             Expr::Literal(v) => write!(f, "{:?}", v),
             Expr::Cast { expr, data_type } => {

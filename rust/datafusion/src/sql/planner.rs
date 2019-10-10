@@ -175,9 +175,7 @@ impl SqlToRel {
                         &Some(ref limit_expr) => {
                             let input_schema = order_by_plan.schema();
 
-                            let limit_rex = match self
-                                .sql_to_rex(&limit_expr, &input_schema.clone())?
-                            {
+                            let limit_rex = match self.sql_to_rex(&limit_expr, &input_schema.clone())? {
                                 Expr::Literal(ScalarValue::Int64(n)) => {
                                     Ok(Expr::Literal(ScalarValue::UInt32(n as u32)))
                                 }
@@ -247,7 +245,7 @@ impl SqlToRel {
             }
 
             &ASTNode::SQLWildcard => {
-                Err(ExecutionError::NotImplemented("SQL wildcard operator is not supported in projection - please use explicit column names".to_string()))
+                Ok(Expr::Wildcard)
             }
 
             &ASTNode::SQLCast {

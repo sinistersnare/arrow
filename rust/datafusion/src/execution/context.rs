@@ -33,7 +33,7 @@ use crate::error::{ExecutionError, Result};
 use crate::execution::physical_plan::common;
 use crate::execution::physical_plan::datasource::DatasourceExec;
 use crate::execution::physical_plan::expressions::{
-    Avg, BinaryExpr, CastExpr, Column, Count, Literal, Max, Min, Sum,
+    Avg, BinaryExpr, CastExpr, Column, Count, Literal, Max, Min, Sum, Wildcard
 };
 use crate::execution::physical_plan::hash_aggregate::HashAggregateExec;
 use crate::execution::physical_plan::limit::LimitExec;
@@ -349,6 +349,7 @@ impl ExecutionContext {
         input_schema: &Schema,
     ) -> Result<Arc<dyn PhysicalExpr>> {
         match e {
+            Expr::Wildcard => Ok(Arc::new(Wildcard::new())),
             Expr::Column(i) => Ok(Arc::new(Column::new(*i))),
             Expr::Literal(value) => Ok(Arc::new(Literal::new(value.clone()))),
             Expr::BinaryExpr { left, op, right } => Ok(Arc::new(BinaryExpr::new(
@@ -641,6 +642,19 @@ mod tests {
 
         let batch = &results[0];
         let expected = vec!["0,10", "1,10", "2,10", "3,10"];
+        let mut rows = test::format_batch(&batch);
+        rows.sort();
+        assert_eq!(rows, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn wildcard_works() -> Result<()> {
+        let results = execute("SELECT * FROM test", 1)?;
+        assert_eq!(results.len(), 1);
+
+        let batch = &results[0];
+        let expected = vec!["0,0", "0,1", "0,2", "0,3", "0,4", "0,5", "0,6", "0,7", "0,8", "0,9", "0,10"];
         let mut rows = test::format_batch(&batch);
         rows.sort();
         assert_eq!(rows, expected);

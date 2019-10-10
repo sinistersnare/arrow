@@ -865,6 +865,32 @@ impl PhysicalExpr for CastExpr {
     }
 }
 
+pub struct Wildcard;
+
+impl Wildcard {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl PhysicalExpr for Wildcard {
+    fn name(&self) -> String {
+        "wildcard".to_string() // should this just be "*"?
+    }
+
+    fn data_type(&self, input_schema: &Schema) -> Result<DataType> {
+        Ok(DataType::Struct(input_schema.fields().clone()))
+    }
+
+    fn evaluate(&self, batch: &RecordBatch) -> Result<ArrayRef> {
+        Ok(batch.column(0).clone())
+    }
+}
+
+pub fn wildcard() -> Arc<dyn PhysicalExpr> {
+    Arc::new(Wildcard::new())
+}
+
 /// Represents a non-null literal value
 pub struct Literal {
     value: ScalarValue,

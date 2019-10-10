@@ -142,6 +142,7 @@ fn rewrite_expr(expr: &Expr, schema: &Schema) -> Result<Expr> {
         Expr::Cast { .. } => Ok(expr.clone()),
         Expr::Column(_) => Ok(expr.clone()),
         Expr::Literal(_) => Ok(expr.clone()),
+        Expr::Wildcard => Ok(expr.clone()),
         other => Err(ExecutionError::NotImplemented(format!(
             "Type coercion optimizer rule does not support expression: {:?}",
             other

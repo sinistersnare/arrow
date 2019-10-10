@@ -229,6 +229,7 @@ impl ProjectionPushDown {
 
     fn rewrite_expr(&self, expr: &Expr, mapping: &HashMap<usize, usize>) -> Result<Expr> {
         match expr {
+            Expr::Wildcard => Ok(Expr::Wildcard),
             Expr::Column(i) => Ok(Expr::Column(self.new_index(mapping, i)?)),
             Expr::Literal(_) => Ok(expr.clone()),
             Expr::IsNull(e) => Ok(Expr::IsNull(Arc::new(self.rewrite_expr(e, mapping)?))),

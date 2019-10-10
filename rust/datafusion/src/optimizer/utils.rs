@@ -34,6 +34,7 @@ pub fn exprlist_to_column_indices(expr: &Vec<Expr>, accum: &mut HashSet<usize>) 
 /// referenced in the expression
 pub fn expr_to_column_indices(expr: &Expr, accum: &mut HashSet<usize>) {
     match expr {
+        Expr::Wildcard => { /* Not needed I think? FIXME: figure out whats happening here :) */ },
         Expr::Column(i) => {
             accum.insert(*i);
         }
@@ -54,6 +55,7 @@ pub fn expr_to_column_indices(expr: &Expr, accum: &mut HashSet<usize>) {
 /// Create field meta-data from an expression, for use in a result set schema
 pub fn expr_to_field(e: &Expr, input_schema: &Schema) -> Result<Field> {
     match e {
+        Expr::Wildcard => Ok(Field::new("*", DataType::Struct(input_schema.fields().clone()), false)),
         Expr::Column(i) => Ok(input_schema.fields()[*i].clone()),
         Expr::Literal(ref lit) => Ok(Field::new("lit", lit.get_datatype(), true)),
         Expr::ScalarFunction {
